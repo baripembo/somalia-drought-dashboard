@@ -75,15 +75,26 @@ select {
 .row.introduction {
 	opacity: 1;
 }
+.ocha-logo {
+	align-self: flex-start;
+  border-right: 1px solid #418FDE;
+  margin-right: 10px;
+  padding-right: 10px;
+  width: 100px;
+}
 .title {
 	display: flex;
+}
+.title h1 {
+	margin-top: 3px;
 }
 .title span {
 	font-style: italic;
 	margin-left: auto;
+	margin-top: 3px;
 }
 .icon-ocha {
-	color: #046bb5;
+	color: #FFF;
 	font-size: 24px;
 	left: 25px;
 	position: absolute;
@@ -150,22 +161,12 @@ select {
 	font-size: 12px;
 }
 #idpStats {
-	margin: 10px 0;
+	margin: 20px 0;
 }
 #idpDates {
 	font-family: 'SourceSansPro-Regular';
 	font-weight: normal;
 	text-transform: capitalize;
-}
-.empty {
-	height: 100px;
-	position: relative;
-}
-.empty .num {
-	position: absolute;
-	top: 30%;
-	left: 50%;
-	transform: translate(-50%, -50%);
 }
 .mockup {
 	width: 100%;
@@ -178,4 +179,33 @@ select {
 	font-family: 'Gotham-Bold';
 	display: none;
 }
+.key-figure {
+	margin-bottom: 30px;
+}
+.chart-container {
+  border: 1px solid #e6e7e8;
+  padding-top: 5px;
+}
+.chart-header {
+	background-color: #418FDE;
+  display: inline-block;
+  margin-bottom: 0;
+  min-height: 41px;
+  padding: 1px 8px 0 45px;
+  background-repeat: no-repeat;
+  background-position: 8px 8px;
+  width: 100%;
+}
+.chart-header h4 {
+  color: #fff;
+  margin-top: 13px;
 
+}
+.chart-header h3 {
+  color: #fff;
+  min-height: 50px;
+}
+
+.sectorChart > div {
+    margin-bottom: 15px;
+}

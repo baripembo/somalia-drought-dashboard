@@ -173,7 +173,7 @@ function generateMap(adm2, countrieslabel, idpData){
     bindto: '#idpChart',
     padding: { left: 30 },
     size: {
-      height: 320
+      height: 350
     },
     data: {
       x: 'Date',
@@ -287,8 +287,8 @@ function reset() {
   //reset IDP chart
   if (idpLineChart.data.shown()[0]!==undefined) {
     var currentLine = idpLineChart.data.shown()[0].id;
-    currentLine = (currentLine!=='Displaced') ? currentLine : '';
-    idpLineChart.unload(currentLine);
+    currentLine = (currentLine!=='Displaced') ? currentLine : null;
+    if (currentLine!=null) idpLineChart.unload(currentLine);
   }
   idpLineChart.show();
   idpLineChart.flush();
@@ -353,6 +353,83 @@ function generateRiverLevels(riverLevel1Data, riverLevel2Data) {
   }
 }
 
+/** Key Figures **/
+function generateKeyFigures(keyFigureData) {
+  for (var i=0; i<keyFigureData.length; i++) {
+    $('#keyFigures').append('<div class="col-md-3"><h3>'+keyFigureData[i]['#indicator']+'</h3><div class="key-figure"><span class="num">'+keyFigureData[i]['#affected+num']+'</span></div></div>');
+  }
+}
+
+
+function generateSectorData (data) {
+
+  var sectors = [];
+  var dates = [];
+  dates.push('x');
+  for(k in data){
+    sectors.includes(data[k]['#sector'])? '': sectors.push(data[k]['#sector']);
+    var d = parseDate(data[k]['#date']);
+    dates.includes(data[k]['#date']) ? '': dates.push(data[k]['#date']);
+  }
+  for (var i = 0; i < sectors.length; i++) {
+    var reachedArr = [];
+    var indicatorName = [];
+    var targetArr = [];
+    reachedArr.push('Reached');
+    targetArr.push('Target');
+    for (k in data){
+      if (data[k]['#sector']===sectors[i]) {
+        reachedArr.push(data[k]['#reached']);
+        targetArr.push(data[k]['#targeted']);
+        indicatorName.includes(data[k]['#indicator'])? '': indicatorName.push(data[k]['#indicator']);
+      }
+
+    }
+    var sectorName= (sectors[i] ==='FOOD SECURITY') ? indicatorName[0] = 'foodsecuritycluster' : sectors[i].toLowerCase();
+    $('.sectorChart').append('<div class="col-sm-6 col-md-4" id="indicator'+i+'"><div class="chart-header"><i class="icon-ocha icon-'+sectorName+'"></i><h4>'+sectors[i]+'</h4><h3>'+indicatorName[0]+'</h3></div><div class="chart-container" id="chart'+i+'""></div>');
+    var chartType = 'line';
+    var chart = c3.generate({
+      bindto: '#chart'+i,
+      size: {height: 200},
+      data: {
+        x: 'x',
+        type: chartType,
+        columns: [dates, reachedArr, targetArr],
+        colors: {
+          Target: '#659ad2',
+          Reached: '#f47933'
+        }
+      },
+      axis: {
+        x: {
+          type: 'timeseries',
+          localtime: false,
+          tick: {
+            centered: false,
+            format: '%b %Y',
+            outer: false
+          }
+        },
+        y:{
+          tick: {
+            count: 5,
+            format: d3.format('.2s')
+          },
+          min: 0,
+          padding: {bottom: 0}
+        }
+      },
+      tooltip: {
+        format: {
+          value: d3.format(',')
+        }
+      },
+      padding: {right: 35}
+    });
+    $('#chart'+i).data('chartObj', chart);
+  }
+}//generateSectorData
+
 var somCall = $.ajax({ 
   type: 'GET', 
     url: 'data/som-adm2-neighbour-topo.json',
@@ -395,6 +472,18 @@ var idpCall = $.ajax({
   dataType: 'json',
 });
 
+var keyFiguresCall = $.ajax({
+  type: 'GET',
+  url: 'https://proxy.hxlstandard.org/data.json?strip-headers=on&force=on&url=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2F19U-C50J8OvvuvtAgJQ09eWJ3BAxxAfZlU5qH4SvAdwg%2Fedit%23gid%3D0',
+  dataType: 'json',
+});
+
+var sectorDataCall = $.ajax({
+  type: 'GET',
+  url: 'https://proxy.hxlstandard.org/data.json?strip-headers=on&url=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2F1UVyiOhuUqiIKrZfwl9al9GBUyH43ioYr-F8TE03rySU%2Fedit%23gid%3D0&force=on',
+  dataType: 'json',
+});
+
 var cf,
     idpsDimension,
     idpsGroup,
@@ -429,3 +518,17 @@ $.when(riverLevel1Call, riverLevel2Call).then(function(riverLevel1Args, riverLev
   generateRiverLevels(riverLevel1Data, riverLevel2Data);
 });
 
+//indicator data
+$.when(keyFiguresCall).then(function(keyFiguresArgs){
+  var keyFigures = hxlProxyToJSON(keyFiguresArgs);
+  generateKeyFigures(keyFigures);
+});
+
+//sector data 
+$.when(sectorDataCall).then(function(sectorDataArgs){
+  var sectorData = crossfilter(hxlProxyToJSON(sectorDataArgs));
+  var dim = sectorData.dimension(function(d){ return d['#sector']; });
+  var arr = dim.top(Infinity);
+  generateSectorData(arr);
+
+});
